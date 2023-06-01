@@ -94,7 +94,7 @@ config = {
 
 # ============================================== TESTS =====================================================
 
-"""
+
 # 1
 # ConnectedValueHeuristic VS ShortestPathValueHeuristic
 # with RandomOrderHeuristic
@@ -233,10 +233,12 @@ formatted_test(config, N)
 # TwoDistanceValueHeuristic wins: 7
 # TwoDistanceValueHeuristic with Charge Ordering wins average move time: 0.3478755031722586
 # TwoDistanceValueHeuristic average move time: 0.551365240678479
-"""
+# COMMENT:
+
 
 # 7
 # TwoDistanceValueHeuristic VS TwoDistanceValueHeuristic
+# with ChargeHeuristic
 # max_depth = 2 VS max_depth = 3
 # 10 trials, 5 times starts the first, and 5 the second
 
@@ -251,5 +253,9 @@ config['AI2_node_ordering_heuristic'] = heuristics.ChargeHeuristic(config['board
 formatted_test(config, N)
 
 # RESULT:
-
+# TwoDistanceValueHeuristic wins: 10
+# TwoDistanceValueHeuristic wins: 0
+# TwoDistanceValueHeuristic average move time: 0.0813470839260313
+# TwoDistanceValueHeuristic average move time: 1.4596366998577526
+# COMMENT:
 
