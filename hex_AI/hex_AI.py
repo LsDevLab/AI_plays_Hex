@@ -139,3 +139,29 @@ def computer_turn(game, ui, config):
     node = move[0] * ui.board_size + move[1]
     ui.color[node] = ui.blue if player is ui.BLUE_PLAYER else ui.red
     print(move)
+
+def computer_turn_testing(game, config):
+    """
+    Plays a move from the computer.
+
+    :param game: the game object
+    :param ui: the game ui object
+    :param config: the game config
+    """
+    # compute the best move
+    player = game.player_turn
+    # if this is the first move uses the central cell as opening move
+    if len(game.available_moves()) == config['board_size'] ** 2:
+        move = (config['board_size'] // 2, config['board_size'] // 2)
+    else:
+        node_value_heuristic = config['AI1_node_value_heuristic'] if (player == 1) else config[
+            'AI2_node_value_heuristic']
+        node_ordering_heuristic = config['AI1_node_ordering_heuristic'] if (player == 1) else config[
+            'AI2_node_ordering_heuristic']
+        max_depth = config['AI1_max_depth'] if (player == 1) else config['AI2_max_depth']
+        maximize = (player == 1)
+        _, move = alpha_beta_pruning(game, maximize, max_depth=max_depth,
+                                            node_value_heuristic=node_value_heuristic,
+                                            node_ordering_heuristic=node_ordering_heuristic)
+    # plays the move
+    game.play_move(move)

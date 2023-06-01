@@ -20,7 +20,7 @@ from hex import Hex
 import PySpice.Logging.Logging as Logging
 logger = Logging.setup_logging()
 from PySpice.Spice.Netlist import Circuit
-
+from PySpice.Unit import *
 
 # =============================================== Node Value Heuristics ===============================================
 
@@ -340,7 +340,7 @@ class ResistanceValueHeuristic(ValueHeuristic):
                             R = 1
                         if R is not None:
                             rr, cc = self.get_coord_label(r, c, adj_r, adj_c, game.n)
-                            res = circuit.R(rr+'-'+cc, rr, cc, R @ u_Ω)
+                            res = circuit.R(rr+'-'+cc, rr, cc, R@u_Ω)
                             #if c == game.n - 1:
                             #    res.plus.add_current_probe(circuit)
         #print('Building resistance graph took', time.time() - time_start)
@@ -350,10 +350,10 @@ class ResistanceValueHeuristic(ValueHeuristic):
             for i in range(game.n):
                 R = 0
                 rr, cc = self.get_coord_label(i, 0, 20, 20, game.n)
-                circuit.R(rr + '-' + cc, rr, cc, R @ u_Ω)
+                circuit.R(rr + '-' + cc, rr, cc, R@u_Ω)
                 R = 0
                 rr, cc = self.get_coord_label(21, 21, i, game.n-1, game.n)
-                circuit.R(str(circuit.gnd) + '-' + cc, circuit.gnd, cc, R @ u_Ω)
+                circuit.R(str(circuit.gnd) + '-' + cc, circuit.gnd, cc, R@u_Ω)
 
             rr, cc = self.get_coord_label(20, 20, 21, 21, game.n)
             circuit.V('b', circuit.gnd, rr, 1@u_V)
@@ -366,10 +366,10 @@ class ResistanceValueHeuristic(ValueHeuristic):
             for j in range(game.n):
                 R = 0
                 rr, cc = self.get_coord_label(22, 22, 0, j, game.n)
-                circuit.R(rr + '-' + cc, rr, cc, R @ u_Ω)
+                circuit.R(rr + '-' + cc, rr, cc, R@u_Ω)
                 R = 0
                 rr, cc = self.get_coord_label(game.n-1, j, 23, 23, game.n)
-                circuit.R(str(circuit.gnd) + '-' + rr, circuit.gnd, rr, R @ u_Ω)
+                circuit.R(str(circuit.gnd) + '-' + rr, circuit.gnd, rr, R@u_Ω)
 
             rr, cc = self.get_coord_label(22, 22, 23, 23, game.n)
             circuit.V('r', circuit.gnd, rr, 1@u_V)
