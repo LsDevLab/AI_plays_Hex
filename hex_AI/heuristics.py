@@ -431,7 +431,7 @@ class RandomOrderHeuristic(OrderHeuristic):
         return available_moves
 
 # found on Github of rjewsbury
-# Treats stones as positive/negative charges, and tries to find sadle points in the field
+# Treats stones as positive/negative charges, and tries to find saddle points in the field
 # supposed to represent choosing contested moves
 class ChargeHeuristic(OrderHeuristic):
     _max_charge = 9

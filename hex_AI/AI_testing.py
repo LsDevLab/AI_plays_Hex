@@ -145,7 +145,7 @@ config = {
 # 20 trials, 10 times starts the first, and 10 the second
 
 
-N = 30
+"""N = 30
 config['AI1_max_depth'] = 2
 config['AI2_max_depth'] = 2
 config['AI1_node_value_heuristic'] = heuristics.ConnectedValueHeuristic()
@@ -278,7 +278,7 @@ formatted_test(config, N)
 # TwoDistanceValueHeuristic average move time: 0.551365240678479
 # COMMENT:
 
-
+"""
 # 7
 # TwoDistanceValueHeuristic VS TwoDistanceValueHeuristic
 # with ChargeHeuristic
