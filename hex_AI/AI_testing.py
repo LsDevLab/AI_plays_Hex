@@ -9,6 +9,10 @@
 FILE: this file contains all the testing and the benchmarks done on my AI players
 """
 import time
+import numpy as np
+import scipy as sc
+from tabulate import tabulate
+
 import hex_AI
 from hex import Hex
 import heuristics
@@ -20,29 +24,33 @@ def test(config, trials):
     AI1_wins = 0
     AI2_wins = 0
 
-    AI1_avg_time_total = 0
-    AI2_avg_time_total = 0
+    AI1_wins_when_starting = 0
+    AI2_wins_when_starting = 0
+
+    AI1_avg_times = []
+    AI2_avg_times = []
+    game_lasted = []
 
     # run trials run of the experiment
     for n in range(trials):
-        print('Trial', n, '/', trials, '- starting_player:', starting_player)
+        AI1_avg_times.append([])
+        AI2_avg_times.append([])
+        print('Trial', n, '/', trials, '- starting_player:', starting_player, '\n')
         # init the game
         hex = Hex(config['board_size'], starting_player=starting_player)
         i = 0
-        AI1_avg_time = 0
-        AI2_avg_time = 0
         # until game finishes
         while True:
-            print('\nTurn', i, '- Player', hex.player_turn)
+            print('Turn', i, '- Player', hex.player_turn, end='. ')
             # running game turn and measuring play time
             start_time = time.time()
             hex_AI.computer_turn_testing(hex, config)
             lasted_time = round(time.time() - start_time, 3)
             if hex.player_turn == 1:
-                AI2_avg_time += lasted_time
+                AI2_avg_times[n].append(lasted_time)
             else:
-                AI1_avg_time += lasted_time
-            print('Took', lasted_time, 's')
+                AI1_avg_times[n].append(lasted_time)
+            print('Took', lasted_time, 's to place a move')
             winner = hex.check_game()
             # if there is a winner breaks
             if winner is not None:
@@ -50,35 +58,70 @@ def test(config, trials):
                       '\033[34m●\033[0m' if winner == 1 else '\033[31m●\033[0m', 'wins! =================\n')
                 if winner == 1:
                     AI1_wins += 1
+                    if winner == starting_player:
+                        AI1_wins_when_starting += 1
                 else:
                     AI2_wins += 1
+                    if winner == starting_player:
+                        AI2_wins_when_starting += 1
                 break
             i += 1
-        AI1_avg_time /= i
-        AI2_avg_time /= i
-        AI1_avg_time_total += AI1_avg_time
-        AI2_avg_time_total += AI2_avg_time
+        game_lasted.append(i+1)
         starting_player = -starting_player
 
-    AI1_avg_time_total /= trials
-    AI2_avg_time_total /= trials
+    meansA1 = []
+    stdsA1 = []
+    for times in AI1_avg_times:
+        meansA1.append(np.mean(np.asarray(times)))
+        stdsA1.append(np.std(np.asarray(times)))
 
-    return AI1_wins, AI2_wins, AI1_avg_time_total, AI2_avg_time_total
+    meansA2 = []
+    stdsA2 = []
+    for times in AI2_avg_times:
+        meansA2.append(np.mean(np.asarray(times)))
+        stdsA2.append(np.std(np.asarray(times)))
+
+    stats, p = sc.stats.mannwhitneyu(np.asarray(meansA1), np.asarray(meansA2), alternative='less')
+
+
+    alpha = 0.05
+    if p > alpha:
+        mw_res = 'same performances!'
+    else:
+        mw_res = 'different performances!'
+
+    return AI1_wins, AI2_wins, AI1_wins_when_starting, AI2_wins_when_starting,\
+        np.mean(np.asarray(meansA1)), np.mean(np.asarray(stdsA1)), \
+        np.mean(np.asarray(meansA2)), np.mean(np.asarray(stdsA2)), \
+        np.mean(np.asarray(game_lasted)), \
+        mw_res
 
 def formatted_test(config, N):
     print('\n===========================================================================')
     print('Board size', config['board_size'])
     print(config['AI1_node_value_heuristic'].__class__.__name__, 'VS',
           config['AI2_node_value_heuristic'].__class__.__name__)
-    print('max depth', config['AI1_max_depth'], '- max depth', config['AI2_max_depth'])
+    print(config['AI1_node_ordering_heuristic'].__class__.__name__, 'VS',
+          config['AI2_node_ordering_heuristic'].__class__.__name__)
+    print('max depth', config['AI1_max_depth'], 'VS max depth', config['AI2_max_depth'])
     print('===========================================================================\n')
-    AI1_wins, AI2_wins, AI1_avg_time_total, AI2_avg_time_total = test(config, N)
-    print('[On', N, 'trials]')
-    print(config['AI1_node_value_heuristic'].__class__.__name__, 'wins:', AI1_wins,
-          config['AI2_node_value_heuristic'].__class__.__name__, 'wins:', AI2_wins)
-    print(config['AI1_node_value_heuristic'].__class__.__name__, 'average move time:', AI1_avg_time_total,
-          config['AI2_node_value_heuristic'].__class__.__name__, 'average move time:', AI2_avg_time_total)
+    AI1_wins, AI2_wins, AI1_wins_starting, AI2_wins_starting,\
+        AI1_avg_move_time, AI1_std_move_time, \
+        AI2_avg_move_time, AI2_std_move_time, \
+        game_lasted, \
+        mw_res = test(config, N)
+    print('[Results averaged on', N, 'trials]')
 
+    headers = ['', config['AI1_node_value_heuristic'].__class__.__name__, config['AI2_node_value_heuristic'].__class__.__name__]
+    table = [['N of wins',  round(AI1_wins, 5), round(AI2_wins, 5)],
+             ['N of wins as starting player', round(AI1_wins_starting, 5), round(AI2_wins_starting, 5)],
+             ['E[MoveTime]', round(AI1_avg_move_time, 5), round(AI2_avg_move_time, 5)],
+             ['Std[MoveTime]', round(AI1_std_move_time, 5), round(AI2_std_move_time, 5)],
+             ['Avg move times with Mann-Whitney test', mw_res],
+             ['Number of moves to win', round(game_lasted, 5)]]
+
+    print(tabulate(table, headers=headers), '\n')
+    print(tabulate(table, headers=headers, tablefmt='latex', maxcolwidths=[12, None, None]))
 
 # the game configs
 board_size = 11
@@ -102,7 +145,7 @@ config = {
 # 20 trials, 10 times starts the first, and 10 the second
 
 
-N = 20
+N = 30
 config['AI1_max_depth'] = 2
 config['AI2_max_depth'] = 2
 config['AI1_node_value_heuristic'] = heuristics.ConnectedValueHeuristic()
@@ -124,7 +167,7 @@ formatted_test(config, N)
 # max_depth = 2 VS max_depth = 2
 # 20 trials, 10 times starts the first, and 10 the second
 
-N = 20
+N = 30
 config['AI1_max_depth'] = 2
 config['AI2_max_depth'] = 2
 config['AI1_node_value_heuristic'] = heuristics.ShortestPathValueHeuristic()
@@ -147,7 +190,7 @@ formatted_test(config, N)
 # max_depth = 2 VS max_depth = 2
 # 20 trials, 10 times starts the first, and 10 the second
 
-N = 20
+N = 30
 config['AI1_max_depth'] = 2
 config['AI2_max_depth'] = 2
 config['AI1_node_value_heuristic'] = heuristics.ShortestPathValueHeuristic()
@@ -168,9 +211,9 @@ formatted_test(config, N)
 # TwoDistanceValueHeuristic VS MaxFlowValueHeuristic
 # with RandomOrderHeuristic
 # max_depth = 2 VS max_depth = 2
-# 20 trials, 10 times starts the first, and 10 the second
+# 10 trials, 5 times starts the first, and 5 the second
 
-N = 6
+N = 20
 config['board_size'] = 8
 config['AI1_max_depth'] = 2
 config['AI2_max_depth'] = 2
@@ -192,9 +235,9 @@ formatted_test(config, N)
 # TwoDistanceValueHeuristic VS ResistanceValueHeuristic
 # with RandomOrderHeuristic
 # max_depth = 2 VS max_depth = 2
-# 20 trials, 10 times starts the first, and 10 the second
+# 10 trials, 5 times starts the first, and 5 the second
 
-N = 6
+N = 20
 config['board_size'] = 8
 config['AI1_max_depth'] = 2
 config['AI2_max_depth'] = 2
@@ -218,7 +261,7 @@ formatted_test(config, N)
 # max_depth = 2 VS max_depth = 2
 # 20 trials, 10 times starts the first, and 10 the second
 
-N = 20
+N = 30
 config['board_size'] = 11
 config['AI1_max_depth'] = 2
 config['AI2_max_depth'] = 2
@@ -242,7 +285,7 @@ formatted_test(config, N)
 # max_depth = 2 VS max_depth = 3
 # 10 trials, 5 times starts the first, and 5 the second
 
-N = 10
+N = 20
 config['board_size'] = 8
 config['AI1_max_depth'] = 2
 config['AI2_max_depth'] = 3

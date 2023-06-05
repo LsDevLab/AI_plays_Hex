@@ -69,9 +69,9 @@ config = {
     'board_size': board_size,
     'AI_vs_AI': True,
     'max_depth': 2,
-    'AI1_node_value_heuristic': heuristics.ResistanceValueHeuristic(),
-    'AI1_node_ordering_heuristic': heuristics.RandomOrderHeuristic(),
-    'AI2_node_value_heuristic': heuristics.YReductionValueHeuristic(),
+    'AI1_node_value_heuristic': heuristics.TwoDistanceValueHeuristic(),
+    'AI1_node_ordering_heuristic': heuristics.ChargeHeuristic(board_size),
+    'AI2_node_value_heuristic': heuristics.ShortestPathValueHeuristic(),
     'AI2_node_ordering_heuristic': heuristics.RandomOrderHeuristic(),
     'starting_player': -1
 }
