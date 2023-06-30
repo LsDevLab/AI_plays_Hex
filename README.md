@@ -12,7 +12,7 @@
   <p align="center">
     A Python project to explore game search, heuristics and other techniques to play Hex
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Read the paper</strong></a>
+    <a href="https://github.com/LsDevLab/AI_plays_Hex/blob/master/AI_plays_Hex.pdf"><strong>Read the paper</strong></a>
     <br />
     <br />
   </p>
