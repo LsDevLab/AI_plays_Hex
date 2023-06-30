@@ -67,7 +67,7 @@ def user_turn(game, ui, config):
 board_size = 11
 config = {
     'board_size': board_size,
-    'AI_vs_AI': True,
+    'AI_vs_AI': False,
     'max_depth': 2,
     'AI1_node_value_heuristic': heuristics.TwoDistanceValueHeuristic(),
     'AI1_node_ordering_heuristic': heuristics.ChargeHeuristic(board_size),
